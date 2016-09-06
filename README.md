@@ -2,6 +2,9 @@
 
 A simple mpv script for manually cropping videos with ease.
 
+* Works during video playback
+* No need to re-encode or modify video files
+
 ### Installation
 
 Place `easycrop.lua` in your `~/.mpv/scripts` or `~/.config/mpv/scripts` directory.
