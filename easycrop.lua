@@ -68,7 +68,7 @@ local draw_clear = function ()
     mp.set_osd_ass(osd_w, osd_h, "")
 end
 
-local mouse_move_cb = function ()
+local draw_cropper = function ()
     if #points == 1 then
         local p2 = {}
         p2.x, p2.y = mp.get_mouse_pos()
@@ -118,7 +118,11 @@ local file_loaded_cb = function ()
             points = {}
         end
     end)
-    mp.add_key_binding("mouse_move", mouse_move_cb)
 end
+
+-- Redraw the selection filter on window resize or mouse move
+mp.add_key_binding("mouse_move", draw_cropper)
+mp.observe_property("osd-width", "native", draw_cropper)
+mp.observe_property("osd-height", "native", draw_cropper)
 
 mp.register_event('file-loaded', file_loaded_cb)
