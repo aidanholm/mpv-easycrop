@@ -1,5 +1,35 @@
 local msg = require('mp.msg')
+local assdraw = require('mp.assdraw')
+
 local script_name = "easycrop"
+
+local points = {}
+
+local draw_rect = function (p1, p2)
+    local osd_w, osd_h = mp.get_property("osd-width"), mp.get_property("osd-height")
+
+    ass = assdraw.ass_new()
+    ass:draw_start()
+    ass:append(string.format("{\\1a&H%X&}", 0.1))
+    ass:rect_cw(p1.x, p1.y, p2.x, p2.y)
+    ass:pos(0, 0)
+    ass:draw_stop()
+
+    mp.set_osd_ass(osd_w, osd_h, ass.text)
+end
+
+local draw_clear = function ()
+    local osd_w, osd_h = mp.get_property("osd-width"), mp.get_property("osd-height")
+    mp.set_osd_ass(osd_w, osd_h, "")
+end
+
+local mouse_move_cb = function ()
+    if #points == 1 then
+        local p2 = {}
+        p2.x, p2.y = mp.get_mouse_pos()
+        draw_rect(points[1], p2)
+    end
+end
 
 local crop = function(p1, p2)
     -- Video native dimensions
@@ -34,15 +64,16 @@ local crop = function(p1, p2)
 end
 
 local file_loaded_cb = function ()
-	local points = {}
     mp.add_key_binding("mouse_btn0", function ()
         local mx, my = mp.get_mouse_pos()
         table.insert(points, { x = mx, y = my })
         if #points == 2 then
             crop(points[1], points[2])
+            draw_clear()
             points = {}
         end
     end)
+    mp.add_key_binding("mouse_move", mouse_move_cb)
 end
 
 mp.register_event('file-loaded', file_loaded_cb)
