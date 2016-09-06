@@ -25,12 +25,39 @@ local draw_rect = function (p1, p2)
     local osd_w, osd_h = mp.get_property("osd-width"), mp.get_property("osd-height")
 
     ass = assdraw.ass_new()
+
+    -- Draw overlay over surrounding unselected region
+
     ass:draw_start()
-    ass:append("{\\bord1}")
-    ass:append(ass_set_color(1, "00000000"))
-    ass:append(ass_set_color(3, "000000aa"))
-    ass:rect_cw(p1.x, p1.y, p2.x, p2.y)
     ass:pos(0, 0)
+
+    ass:append(ass_set_color(1, "000000aa"))
+    ass:append(ass_set_color(3, "00000000"))
+
+    local l = math.min(p1.x, p2.x)
+    local r = math.max(p1.x, p2.x)
+    local u = math.min(p1.y, p2.y)
+    local d = math.max(p1.y, p2.y)
+
+    ass:rect_cw(0, 0, l, osd_h)
+    ass:rect_cw(r, 0, osd_w, osd_h)
+    ass:rect_cw(l, 0, r, u)
+    ass:rect_cw(l, d, r, osd_h)
+
+    ass:draw_stop()
+
+    -- Draw border around selected region
+
+    ass:new_event()
+    ass:draw_start()
+    ass:pos(0, 0)
+
+    ass:append(ass_set_color(1, "00000000"))
+    ass:append(ass_set_color(3, "000000ff"))
+    ass:append("{\\bord2}")
+
+    ass:rect_cw(p1.x, p1.y, p2.x, p2.y)
+
     ass:draw_stop()
 
     mp.set_osd_ass(osd_w, osd_h, ass.text)
