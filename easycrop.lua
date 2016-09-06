@@ -11,6 +11,13 @@ local swizzle_points = function (p1, p2)
     if p1.y > p2.y then p1.y, p2.y = p2.y, p1.y end
 end
 
+local clamp = function (val, min, max)
+    assert(min <= max)
+    if val < min then return min end
+    if val > max then return max end
+    return val
+end
+
 -- Wrapper that converts RRGGBB / RRGGBBAA to ASS format
 local ass_set_color = function (idx, color)
     assert(color:len() == 8 or color:len() == 6)
@@ -106,6 +113,12 @@ local crop = function(p1, p2)
     -- Video offset within screen
     local off_x = math.floor((osd_w - vid_sw)/2)
     local off_y = math.floor((osd_h - vid_sh)/2)
+
+    -- Keep cropping rectangle within the video region
+    p1.x = clamp(p1.x, off_x, off_x + vid_sw)
+    p1.y = clamp(p1.y, off_y, off_y + vid_sh)
+    p2.x = clamp(p2.x, off_x, off_x + vid_sw)
+    p2.y = clamp(p2.y, off_y, off_y + vid_sh)
 
     -- Convert screen-space to video-space
     p1.x = math.floor((p1.x - off_x) / scale)
