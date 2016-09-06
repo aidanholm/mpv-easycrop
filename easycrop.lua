@@ -109,7 +109,7 @@ local crop = function(p1, p2)
     local h = math.abs(p1.y - p2.y)
     local x = math.min(p1.x, p2.x)
     local y = math.min(p1.y, p2.y)
-    mp.command(string.format("vf add @%s:crop=%s:%s:%s:%s", easy_crop, w, h, x, y))
+    mp.command(string.format("vf add @%s:crop=%s:%s:%s:%s", script_name, w, h, x, y))
 end
 
 local file_loaded_cb = function ()
