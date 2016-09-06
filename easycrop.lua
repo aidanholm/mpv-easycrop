@@ -5,6 +5,22 @@ local script_name = "easycrop"
 
 local points = {}
 
+-- Wrapper that converts RRGGBB / RRGGBBAA to ASS format
+local ass_set_color = function (idx, color)
+    assert(color:len() == 8 or color:len() == 6)
+    local ass = ""
+
+    -- Set alpha value (if present)
+    if color:len() == 8 then
+        local alpha = 0xff - tonumber(color:sub(7, 8), 16)
+        ass = ass .. string.format("\\%da&H%X&", idx, alpha)
+    end
+
+    -- Swizzle RGB to BGR and build ASS string
+    color = color:sub(5, 6) .. color:sub(3, 4) .. color:sub(1, 2)
+    return "{" .. ass .. string.format("\\%dc&H%s&", idx, color) .. "}"
+end
+
 local draw_rect = function (p1, p2)
     local osd_w, osd_h = mp.get_property("osd-width"), mp.get_property("osd-height")
 
