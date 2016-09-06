@@ -5,6 +5,12 @@ local script_name = "easycrop"
 
 local points = {}
 
+-- Helper that converts two points to top-left and bottom-right
+local swizzle_points = function (p1, p2)
+    if p1.x > p2.x then p1.x, p2.x = p2.x, p1.x end
+    if p1.y > p2.y then p1.y, p2.y = p2.y, p1.y end
+end
+
 -- Wrapper that converts RRGGBB / RRGGBBAA to ASS format
 local ass_set_color = function (idx, color)
     assert(color:len() == 8 or color:len() == 6)
@@ -81,6 +87,8 @@ local uncrop = function ()
 end
 
 local crop = function(p1, p2)
+    swizzle_points(p1, p2)
+
     -- Video native dimensions
     local vid_w = mp.get_property("width")
     local vid_h = mp.get_property("height")
@@ -105,12 +113,10 @@ local crop = function(p1, p2)
     p2.x = math.floor((p2.x - off_x) / scale)
     p2.y = math.floor((p2.y - off_y) / scale)
 
-    local w = math.abs(p1.x - p2.x)
-    local h = math.abs(p1.y - p2.y)
-    local x = math.min(p1.x, p2.x)
-    local y = math.min(p1.y, p2.y)
+    local w = p2.x - p1.x
+    local h = p2.y - p1.y
     local ok, err = mp.command(string.format(
-        "no-osd vf add @%s:crop=%s:%s:%s:%s", script_name, w, h, x, y))
+        "no-osd vf add @%s:crop=%s:%s:%s:%s", script_name, w, h, p1.x, p1.y))
 
     if not ok then
         mp.osd_message("Cropping failed")
