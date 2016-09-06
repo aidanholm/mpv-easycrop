@@ -76,6 +76,10 @@ local draw_cropper = function ()
     end
 end
 
+local uncrop = function ()
+    mp.command("vf del @" .. script_name .. ":crop")
+end
+
 local crop = function(p1, p2)
     -- Video native dimensions
     local vid_w = mp.get_property("width")
@@ -115,7 +119,9 @@ local file_loaded_cb = function ()
         if #points == 2 then
             crop(points[1], points[2])
             draw_clear()
+        elseif #points == 3 then
             points = {}
+            uncrop()
         end
     end)
 end
