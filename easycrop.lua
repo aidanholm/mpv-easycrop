@@ -48,6 +48,29 @@ local video_space_from_screen_space = function (ssp)
     return vsp
 end
 
+local screen_space_from_video_space = function (vsp)
+    -- Video native dimensions and screen size
+    local vid_w = mp.get_property("width")
+    local vid_h = mp.get_property("height")
+    local osd_w = mp.get_property("osd-width")
+    local osd_h = mp.get_property("osd-height")
+
+    -- Factor by which the video is scaled to fit the screen
+    local scale = math.min(osd_w/vid_w, osd_h/vid_h)
+
+    -- Size video takes up in screen
+    local vid_sw, vid_sh = scale*vid_w, scale*vid_h
+
+    -- Video offset within screen
+    local off_x = math.floor((osd_w - vid_sw)/2)
+    local off_y = math.floor((osd_h - vid_sh)/2)
+
+    local ssp = {}
+    ssp.x = vsp.x * scale + off_x
+    ssp.y = vsp.y * scale + off_y
+    return ssp
+end
+
 -- Wrapper that converts RRGGBB / RRGGBBAA to ASS format
 local ass_set_color = function (idx, color)
     assert(color:len() == 8 or color:len() == 6)
@@ -113,9 +136,10 @@ end
 
 local draw_cropper = function ()
     if #points == 1 then
+        local p1 = screen_space_from_video_space(points[1])
         local p2 = {}
         p2.x, p2.y = mp.get_mouse_pos()
-        draw_rect(points[1], p2)
+        draw_rect(p1, p2)
     end
 end
 
@@ -125,9 +149,6 @@ end
 
 local crop = function(p1, p2)
     swizzle_points(p1, p2)
-
-    p1 = video_space_from_screen_space(p1)
-    p2 = video_space_from_screen_space(p2)
 
     local w = p2.x - p1.x
     local h = p2.y - p1.y
@@ -143,7 +164,7 @@ end
 local file_loaded_cb = function ()
     mp.add_key_binding("mouse_btn0", function ()
         local mx, my = mp.get_mouse_pos()
-        table.insert(points, { x = mx, y = my })
+        table.insert(points, video_space_from_screen_space({ x = mx, y = my }))
         if #points == 2 then
             crop(points[1], points[2])
             draw_clear()
