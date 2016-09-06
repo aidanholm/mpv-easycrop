@@ -18,6 +18,36 @@ local clamp = function (val, min, max)
     return val
 end
 
+local video_space_from_screen_space = function (ssp)
+    -- Video native dimensions and screen size
+    local vid_w = mp.get_property("width")
+    local vid_h = mp.get_property("height")
+    local osd_w = mp.get_property("osd-width")
+    local osd_h = mp.get_property("osd-height")
+
+    -- Factor by which the video is scaled to fit the screen
+    local scale = math.min(osd_w/vid_w, osd_h/vid_h)
+
+    -- Size video takes up in screen
+    local vid_sw, vid_sh = scale*vid_w, scale*vid_h
+
+    -- Video offset within screen
+    local off_x = math.floor((osd_w - vid_sw)/2)
+    local off_y = math.floor((osd_h - vid_sh)/2)
+
+    local vsp = {}
+
+    -- Move the point to within the video
+    vsp.x = clamp(ssp.x, off_x, off_x + vid_sw)
+    vsp.y = clamp(ssp.y, off_y, off_y + vid_sh)
+
+    -- Convert screen-space to video-space
+    vsp.x = math.floor((vsp.x - off_x) / scale)
+    vsp.y = math.floor((vsp.y - off_y) / scale)
+
+    return vsp
+end
+
 -- Wrapper that converts RRGGBB / RRGGBBAA to ASS format
 local ass_set_color = function (idx, color)
     assert(color:len() == 8 or color:len() == 6)
@@ -96,35 +126,8 @@ end
 local crop = function(p1, p2)
     swizzle_points(p1, p2)
 
-    -- Video native dimensions
-    local vid_w = mp.get_property("width")
-    local vid_h = mp.get_property("height")
-
-    -- Screen size
-    local osd_w = mp.get_property("osd-width")
-    local osd_h = mp.get_property("osd-height")
-
-    -- Factor by which the video is scaled to fit the screen
-    local scale = math.min(osd_w/vid_w, osd_h/vid_h)
-
-    -- Size video takes up in screen
-    local vid_sw, vid_sh = scale*vid_w, scale*vid_h
-
-    -- Video offset within screen
-    local off_x = math.floor((osd_w - vid_sw)/2)
-    local off_y = math.floor((osd_h - vid_sh)/2)
-
-    -- Keep cropping rectangle within the video region
-    p1.x = clamp(p1.x, off_x, off_x + vid_sw)
-    p1.y = clamp(p1.y, off_y, off_y + vid_sh)
-    p2.x = clamp(p2.x, off_x, off_x + vid_sw)
-    p2.y = clamp(p2.y, off_y, off_y + vid_sh)
-
-    -- Convert screen-space to video-space
-    p1.x = math.floor((p1.x - off_x) / scale)
-    p1.y = math.floor((p1.y - off_y) / scale)
-    p2.x = math.floor((p2.x - off_x) / scale)
-    p2.y = math.floor((p2.y - off_y) / scale)
+    p1 = video_space_from_screen_space(p1)
+    p2 = video_space_from_screen_space(p2)
 
     local w = p2.x - p1.x
     local h = p2.y - p1.y
