@@ -195,13 +195,14 @@ local mouse_btn0_cb = function ()
 end
 
 local easycrop_start = function ()
-    cropping = true
-
+    -- Just clear the current crop and return, if there is one
     if #points ~= 0 then
         uncrop()
         points = {}
+        return
     end
 
+    cropping = true
     draw_fill()
 end
 
