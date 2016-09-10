@@ -3,7 +3,10 @@ local assdraw = require('mp.assdraw')
 
 local script_name = "easycrop"
 
+-- Number of crop points currently chosen (0 to 2)
 local points = {}
+-- True if in cropping selection mode
+local cropping = false
 
 -- Helper that converts two points to top-left and bottom-right
 local swizzle_points = function (p1, p2)
@@ -129,6 +132,21 @@ local draw_rect = function (p1, p2)
     mp.set_osd_ass(osd_w, osd_h, ass.text)
 end
 
+local draw_fill = function ()
+    local osd_w, osd_h = mp.get_property("osd-width"), mp.get_property("osd-height")
+
+    ass = assdraw.ass_new()
+    ass:draw_start()
+    ass:pos(0, 0)
+
+    ass:append(ass_set_color(1, "000000aa"))
+    ass:append(ass_set_color(3, "00000000"))
+    ass:rect_cw(0, 0, osd_w, osd_h)
+
+    ass:draw_stop()
+    mp.set_osd_ass(osd_w, osd_h, ass.text)
+end
+
 local draw_clear = function ()
     local osd_w, osd_h = mp.get_property("osd-width"), mp.get_property("osd-height")
     mp.set_osd_ass(osd_w, osd_h, "")
@@ -161,23 +179,48 @@ local crop = function(p1, p2)
     end
 end
 
-local file_loaded_cb = function ()
-    mp.add_key_binding("mouse_btn0", function ()
-        local mx, my = mp.get_mouse_pos()
-        table.insert(points, video_space_from_screen_space({ x = mx, y = my }))
-        if #points == 2 then
-            crop(points[1], points[2])
-            draw_clear()
-        elseif #points == 3 then
-            points = {}
-            uncrop()
-        end
-    end)
+local mouse_btn0_cb = function ()
+    if not cropping then
+        return
+    end
+
+    local mx, my = mp.get_mouse_pos()
+    table.insert(points, video_space_from_screen_space({ x = mx, y = my }))
+
+    if #points == 2 then
+        crop(points[1], points[2])
+        cropping = false
+        draw_clear()
+    end
 end
 
--- Redraw the selection filter on window resize or mouse move
+local easycrop_start = function ()
+    cropping = true
+
+    if #points ~= 0 then
+        uncrop()
+        points = {}
+    end
+
+    draw_fill()
+end
+
+local easycrop_stop = function ()
+    cropping = false
+    draw_clear()
+end
+
+local easycrop_activate = function ()
+    if cropping then
+        easycrop_stop()
+    else
+        easycrop_start()
+    end
+end
+
+mp.add_key_binding("mouse_btn0", mouse_btn0_cb)
 mp.add_key_binding("mouse_move", draw_cropper)
 mp.observe_property("osd-width", "native", draw_cropper)
 mp.observe_property("osd-height", "native", draw_cropper)
 
-mp.register_event('file-loaded', file_loaded_cb)
+mp.add_key_binding("c", "easy_crop", easycrop_activate)
