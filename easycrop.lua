@@ -189,8 +189,7 @@ local mouse_btn0_cb = function ()
 
     if #points == 2 then
         crop(points[1], points[2])
-        cropping = false
-        draw_clear()
+        easycrop_stop()
     end
 end
 
@@ -203,11 +202,13 @@ local easycrop_start = function ()
     end
 
     cropping = true
+    mp.add_key_binding("mouse_btn0", "easycrop_mouse_btn0", mouse_btn0_cb)
     draw_fill()
 end
 
 local easycrop_stop = function ()
     cropping = false
+    mp.remove_key_binding("easycrop_mouse_btn0")
     draw_clear()
 end
 
@@ -219,7 +220,6 @@ local easycrop_activate = function ()
     end
 end
 
-mp.add_key_binding("mouse_btn0", mouse_btn0_cb)
 mp.add_key_binding("mouse_move", draw_cropper)
 mp.observe_property("osd-width", "native", draw_cropper)
 mp.observe_property("osd-height", "native", draw_cropper)
