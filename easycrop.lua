@@ -179,6 +179,12 @@ local crop = function(p1, p2)
     end
 end
 
+local easycrop_stop = function ()
+    cropping = false
+    mp.remove_key_binding("easycrop_mouse_btn0")
+    draw_clear()
+end
+
 local mouse_btn0_cb = function ()
     if not cropping then
         return
@@ -204,12 +210,6 @@ local easycrop_start = function ()
     cropping = true
     mp.add_key_binding("mouse_btn0", "easycrop_mouse_btn0", mouse_btn0_cb)
     draw_fill()
-end
-
-local easycrop_stop = function ()
-    cropping = false
-    mp.remove_key_binding("easycrop_mouse_btn0")
-    draw_clear()
 end
 
 local easycrop_activate = function ()
