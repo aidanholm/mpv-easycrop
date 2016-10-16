@@ -200,6 +200,24 @@ local mouse_btn0_cb = function ()
 end
 
 local easycrop_start = function ()
+    -- Cropping requires swdec or hwdec with copy-back
+    local hwdec = mp.get_property("hwdec-current")
+    if hwdec == nil then
+        return mp.msg.error("Cannot determine current hardware decoder mode")
+    end
+    -- Check whitelist of ok values
+    local valid_hwdec = {
+       ["no"] = true, -- software decoding
+       -- Taken from mpv manual
+       ["vaapi-copy"] = true,
+       ["dxva2-copy"] = true,
+       ["d3d11va-copy"] = true,
+       ["mediacodec"] = true
+    }
+    if not valid_hwdec[hwdec] then
+        return mp.osd_message("Cropping requires swdec or hwdec with copy-back (see mpv manual)")
+    end
+
     -- Just clear the current crop and return, if there is one
     if #points ~= 0 then
         uncrop()
