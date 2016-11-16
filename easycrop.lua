@@ -7,6 +7,8 @@ local script_name = "easycrop"
 local points = {}
 -- True if in cropping selection mode
 local cropping = false
+-- Original value of osc property
+local osc_prop = false
 
 -- Helper that converts two points to top-left and bottom-right
 local swizzle_points = function (p1, p2)
@@ -224,6 +226,10 @@ local easycrop_start = function ()
         points = {}
         return
     end
+
+    -- Hide OSC
+    osc_prop = mp.get_property("osc")
+    mp.set_property("osc", "no")
 
     cropping = true
     mp.add_key_binding("mouse_btn0", "easycrop_mouse_btn0", mouse_btn0_cb)
