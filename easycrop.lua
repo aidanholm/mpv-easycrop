@@ -182,6 +182,7 @@ local crop = function(p1, p2)
 end
 
 local easycrop_stop = function ()
+    mp.set_property("osc", osc_prop)
     cropping = false
     mp.remove_key_binding("easycrop_mouse_btn0")
     draw_clear()
