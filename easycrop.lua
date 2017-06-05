@@ -233,7 +233,7 @@ local easycrop_start = function ()
     mp.set_property("osc", "no")
 
     cropping = true
-    mp.add_key_binding("mouse_btn0", "easycrop_mouse_btn0", mouse_btn0_cb)
+    mp.add_forced_key_binding("mouse_btn0", "easycrop_mouse_btn0", mouse_btn0_cb)
     draw_fill()
 end
 
