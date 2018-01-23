@@ -212,6 +212,7 @@ local easycrop_start = function ()
     local valid_hwdec = {
        ["no"] = true, -- software decoding
        -- Taken from mpv manual
+       ["videotoolbox-co"] = true,
        ["vaapi-copy"] = true,
        ["dxva2-copy"] = true,
        ["d3d11va-copy"] = true,
